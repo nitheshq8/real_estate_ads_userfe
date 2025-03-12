@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import MYLayout from "@/components/PropertyPage/MYLayout";
 import PropertyListing from "@/components/PropertyPage/PropertyListing";
 import AdDetailPage from "@/components/AdDetailPage/AdDetailPage";
-import { fetchAllCities, fetchPropertiesById, fetchSubscriptionPlanByUserId } from "@/services/api";
+import { fetchAllCities, fetchPropertiesById, fetchSubscriptionPlanByUserId, getCompanydetailsByName } from "@/services/api";
 import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -17,7 +17,14 @@ export default function Home() {
     price_min: "",
     price_max: "",
   });
-
+  const [companydata, setCompanyData] = useState({
+    name: "-",
+    email: "-",
+    phone: "-",
+    website: "N/A",
+    address: "-",
+    logo: "-",
+  });
   const [properties, setProperties] = useState([]);
   const [trendingProperties1, setTrendingProperties] = useState([]);
   const [cities, setCities] = useState([]);
@@ -48,42 +55,31 @@ export default function Home() {
     }
   };
 
-/** Fetch Cities */
-const fetchCities = async () => {
-  try {
-    const response = await fetchAllCities();
 
-    if (response?.success) {
-      setCities(response.data);
-    } else {
-      throw new Error(
-        response.data?.error?.message || "Failed to fetch cities."
-      );
+
+  const fetchcompanydetails = useCallback(async () => {
+    try {
+      const response = await getCompanydetailsByName({
+        company_name: "my company",
+      });
+      console.log("getCompanydetailsByName", response?.data?.result?.company);
+      if (response?.data.result.success) {
+        setCompanyData(response?.data?.result?.company);
+        setMySubscriptionPlan(response?.data?.result?.subscription_details);
+      } else {
+        console.log("-------responsegetCompanydetails", response);
+      }
+    } catch (err) {
+      console.error("Error fetching company details:", err);
     }
-  } catch (error) {
-    setError("Error fetching cities.");
-    console.error("API Error (Cities):", error);
-  }
-};
-
-const fetchsubscriptionPlan = useCallback(async () => {
-  try {
-    const response:any = await fetchSubscriptionPlanByUserId();
-   setMySubscriptionPlan(response?.data?.result)
-      
-   
-  } catch (error) {
-    setError("Error fetching cities.");
-    console.error("API Error (Cities):", error);
-  }
-}, []);
+  }, []);
 
   /** Fetch All Data in Parallel using `Promise.all` */
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      await Promise.all([fetchProperties(), fetchCities(),fetchsubscriptionPlan()]);
+      await Promise.all([fetchProperties(), fetchcompanydetails()]);
     } catch (error) {
       setError("Error fetching data.");
     } finally {
@@ -116,8 +112,8 @@ const fetchsubscriptionPlan = useCallback(async () => {
   const router = useRouter();
   return (
     <div>
-      <MYLayout properties={trendingProperties1} cities={cities}  selectedAds={selectedAds} isdetailpage={false} handleAdChange={handleAdChange} mysubscriptionPlan={mysubscriptionPlan}>
-        {loading && <Loader/>}
+          <MYLayout properties={trendingProperties1} cities={cities}  selectedAds={selectedAds} isdetailpage={false} companydata={companydata} >
+               {loading && <Loader/>}
         {error && <p className="text-center text-red-500 mt-4">{error}</p>}
         <button
           onClick={() => router.push("/")}
