@@ -318,7 +318,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import MYLayout from "@/components/PropertyPage/MYLayout";
 import PropertyListing from "@/components/PropertyPage/PropertyListing";
 import AdDetailPage from "@/components/AdDetailPage/AdDetailPage";
-import { fetchAllCities, fetchPropertiesById, fetchSubscriptionPlanByUserId, getCompanydetailsByName } from "@/services/api";
+import { fetchAllCities, fetchPropertiesById, fetchSubscriptionPlanByUserId, getAdsByCompany, getCompanydetailsByName } from "@/services/api";
 import Loader from "@/components/Loader";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -366,26 +366,31 @@ export default function Home() {
     // Navigate to dynamic route
   };
   /** Fetch Properties */
-  const fetchProperties = async () => {
-    const accessToken = localStorage.getItem("accessToken");
-        const userData = JSON.parse(localStorage.getItem("aiduser") || "{}");
-    
+  const fetchProperties = useCallback(async () => {
     try {
-      const response = await fetchPropertiesById( { limit: 10, offset: 0, ...filters,user_id:userData.user_id  })
-    
-
-      if (response?.ads) {
-        setProperties(response.ads);
-        setTrendingProperties(response.ads);
+      setLoading(true);
+      const apiParams = {
+        company_name: companyQuery, // or use companyname from params if needed
+        limit: 10,
+        offset: 1,
+        ...filters,
+      };
+      const response = await getAdsByCompany(apiParams);
+      if (response?.data.result.success) {
+        console.log("response",response);
+        
+        setProperties(response.data.result.data);
       } else {
-        throw new Error(response.data?.error?.message || "Failed to fetch properties");
+        console.log("No success in response", response?.data?.result);
+        setError(response?.data?.result?.message);
       }
     } catch (error) {
-      setError("Error fetching properties.");
       console.error("API Error (Properties):", error);
+      setError("Error fetching properties.");
+    } finally {
+      setLoading(false);
     }
-  };
-
+  }, []);
 /** Fetch Cities */
 
   const fetchcompanydetails = useCallback(async () => {
@@ -443,7 +448,7 @@ export default function Home() {
   const router = useRouter();
   return (
     <div>
-      <MYLayout properties={trendingProperties1} cities={cities}  selectedAds={selectedAds} isdetailpage={false} companydata={companydata} >
+      <MYLayout properties={properties} cities={cities}  selectedAds={selectedAds} isdetailpage={false} companydata={companydata} >
         {loading && <Loader/>}
         {error && <p className="text-center text-red-500 mt-4">{error}</p>}
         <button
@@ -452,7 +457,7 @@ export default function Home() {
         >
          <ArrowLeft />
         </button>
-        <AdDetailPage cities={cities} setFilters={setFilters} mysubscriptionPlan={mysubscriptionPlan}/> 
+        <AdDetailPage /> 
         
          {/* <AdDetailWithEdit cities={cities} setFilters={setFilters}/>  */}
          </MYLayout>

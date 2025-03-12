@@ -10,7 +10,7 @@ import {
 } from "@/services/api";
 import { ArrowLeft, Trash2 } from "lucide-react";
 
-const AdDetailPage = ({ cities, setFilters ,mysubscriptionPlan}: any) => {
+const AdDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const adId = useMemo(() => params.id, [params.id]); // Memoize adId to prevent unnecessary re-renders

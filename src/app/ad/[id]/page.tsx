@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import MYLayout from "@/components/PropertyPage/MYLayout";
 import PropertyListing from "@/components/PropertyPage/PropertyListing";
 import AdDetailPage from "@/components/AdDetailPage/AdDetailPage";
-import { fetchAllCities, fetchPropertiesById, fetchSubscriptionPlanByUserId, getCompanydetailsByName } from "@/services/api";
+import { fetchAllCities, fetchAllProperties, fetchPropertiesById, fetchSubscriptionPlanByUserId, getCompanydetailsByName } from "@/services/api";
 import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -40,8 +40,8 @@ export default function Home() {
         const userData = JSON.parse(localStorage.getItem("aiduser") || "{}");
     
     try {
-      const response = await fetchPropertiesById( { limit: 10, offset: 0, ...filters,user_id:userData.user_id  })
-    
+      const response = await fetchAllProperties(  10,  0, filters  )
+      // const response = await fetchAllProperties(page, pageSize, filters);
 
       if (response?.ads) {
         setProperties(response.ads);
@@ -121,7 +121,7 @@ export default function Home() {
         >
          <ArrowLeft />
         </button>
-        <AdDetailPage cities={cities} setFilters={setFilters} mysubscriptionPlan={mysubscriptionPlan}/> 
+        <AdDetailPage /> 
         
          {/* <AdDetailWithEdit cities={cities} setFilters={setFilters}/>  */}
          </MYLayout>
