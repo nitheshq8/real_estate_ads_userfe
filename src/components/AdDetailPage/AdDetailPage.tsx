@@ -2,12 +2,15 @@
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
 import ShareAdsModal from "../PropertyPage/ShareAdsModal";
-import { deleteAds, fetchPropertiesDetailsById, fetchPropertiesDetailsByIdandUpdateView } from "@/services/api";
+import {
+  deleteAds,
+  fetchPropertiesDetailsById,
+  fetchPropertiesDetailsByIdandUpdateView,
+} from "@/services/api";
 import { ArrowLeft, Trash2 } from "lucide-react";
 
-const AdDetailPage = ({ cities, setFilters,fetchProperties }: any) => {
+const AdDetailPage = ({ cities, setFilters ,mysubscriptionPlan}: any) => {
   const params = useParams();
   const router = useRouter();
   const adId = useMemo(() => params.id, [params.id]); // Memoize adId to prevent unnecessary re-renders
@@ -37,21 +40,14 @@ const AdDetailPage = ({ cities, setFilters,fetchProperties }: any) => {
         if (!isFetchedDetail.current) {
           fetchPropertiesDetailsByIdandUpdateView(adId, userData)
             .then(({ details, visits }) => {
-              console.log("Ad Details:", details);
-              console.log("Visits Update Response:", visits);
               const detailsData = details.result?.result;
-              console.log("detailsData", detailsData);
-             
+           
               setAdDetails(detailsData?.data || null);
               const myf = {
-                property_type: detailsData.data?.property_type,
-                reason: detailsData.data?.reason,
-                city: detailsData.data?.city,
+                property_type: detailsData?.property_type,
+                reason: detailsData?.reason,
+                city: detailsData?.city,
               };
-              if(detailsData?.success){
-
-                setFilters(myf)
-              }
             })
             .catch((error) => {
               console.error("Error fetching property by id:", error);
@@ -114,8 +110,9 @@ const AdDetailPage = ({ cities, setFilters,fetchProperties }: any) => {
       try {
         const response: any = await deleteAds({ ad_id: adId });
 
-        if (response.data.result.success) {
+        if (response.data.success) {
           alert("Ad deleted successfully!");
+          router.push("/"); 
           handleAdChange();
           // Optionally, you can trigger a state change to remove the ad from the UI
         } else {
@@ -129,14 +126,17 @@ const AdDetailPage = ({ cities, setFilters,fetchProperties }: any) => {
   };
   return (
     <div className="max-w-4xl mx-auto p-2 mt-3 bg-white shadow-2xl rounded-lg">
-    
-
       {/* Image Slider */}
       <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-gray-200">
-        {images.length > 0 ? (
+        {images.length > 0&& images[0] ? (
           <>
             <img
               src={`data:image/jpeg;base64,${images[currentImageIndex]}`}
+              // src={
+              //   property?.image
+              //     ? `data:image/png;base64,${property?.image}`
+              //     : `https://placehold.co/600x400.png?text=${property.name}`
+              // }
               alt={adDetails?.name}
               className="w-full h-full object-cover"
             />
@@ -191,7 +191,7 @@ const AdDetailPage = ({ cities, setFilters,fetchProperties }: any) => {
       <div className="mt-6">
         <h1 className="text-3xl font-bold text-gray-900">{adDetails?.name}</h1>
         <p className="text-gray-600 text-lg mt-2">
-          {stripHtmlTags(adDetails?.description)}
+       { adDetails?.description &&  stripHtmlTags(adDetails?.description)}
         </p>
 
         {/* Pricing & Location */}
@@ -212,12 +212,33 @@ const AdDetailPage = ({ cities, setFilters,fetchProperties }: any) => {
           </p>
         </div>
 
-       
+        {/* Owner Info */}
+        <div className="bg-gray-100 p-4 mt-6 rounded-lg shadow">
+          {adDetails?.created_by && (
+            <p className="text-gray-500">
+              📧 <span className="font-semibold">Listed by:</span>{" "}
+              {adDetails.created_by.name} ({adDetails.created_by.email})
+            </p>
+          )}
+        </div>
 
         {/* CTA Buttons */}
-        <div className="mt-6">
-          {/* <ShareAdsModal selectedAds={[adDetails]} /> */}
-        </div></div>
+      
+       
+          <>
+          
+            <div className="bg-green-400 flex rounded-md ">
+              {/* <CreateAdModal
+                cities={cities}
+                ad={adDetails}
+                isEditMode={true}
+                handleAdChange={ ()=>router.push('/')}
+                mysubscriptionPlan={mysubscriptionPlan}
+              /> */}
+            </div>
+          </>
+      
+      </div>
     </div>
   );
 };

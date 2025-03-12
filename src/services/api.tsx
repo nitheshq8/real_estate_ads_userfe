@@ -582,3 +582,74 @@ export const getCompanydetailsBytoken = async (params:any) => {
     console.error("API Error (Get Profile):", error);
   }
 };
+export  const fetchadmintredningProperties = async () => {
+ 
+  const userData = JSON.parse(localStorage.getItem("aiduser") || "{}");
+
+
+
+  try {
+    const response = await axios.post(`${apiBaseURL}/real-estate/ads/trendingByUserID`, {
+      jsonrpc: "2.0",
+      method: "call",
+      params: { user_id:userData.user_id  },
+    });
+
+    if (response.data?.result?.result?.data) {
+      // setProperties(response.data.result.result.ads);
+      // setTrendingProperties(response.data.result.result.ads);
+      // setTotalItems(response.data.result.result?.total || 0);
+      return response.data?.result?.result
+    } else {
+      throw new Error(response.data?.error?.message || "Failed to fetch properties");
+    }
+  } catch (error) {
+    // setError("Error fetching properties.");
+    console.error("API Error (Properties):", error);
+  }
+};
+
+export const fetchSubscriptionPlanByUserId = async () => {
+  const userData = JSON.parse(localStorage.getItem("aiduser") || "{}");
+  try {
+    const response = await axios.post(`${apiBaseURL}/subscriptions/user_subscription_plans`, {
+      jsonrpc: "2.0",
+      method: "call",
+      params:{user_id:userData.user_id}
+      
+    });
+    return response
+  } catch (error) {
+   return error
+  }
+};
+// API call: Pass filters including pagination parameters
+export const getAdsByCompany = async (params: any) => {
+  try {
+    console.log("getAdsByCompany params", params);
+    const response = await axios.post(`${apiBaseURL}/compnayads`, {
+      params: params,
+    });
+    return response;
+  } catch (error) {
+    console.error("API Error (Get Ads By Company):", error);
+  }
+};
+
+export const getCompanydetailsByName = async (params: any) => {
+  try {
+    console.log("getCompanydetails", params);
+
+    const response = await axios.post(
+      `${apiBaseURL}/company/details_by_name`,
+      {
+        jsonrpc: "2.0",
+        params: params,
+      }
+    );
+    // Adjust this if your API response structure differs.
+    return response;
+  } catch (error) {
+    console.error("API Error (Get Profile):", error);
+  }
+};
