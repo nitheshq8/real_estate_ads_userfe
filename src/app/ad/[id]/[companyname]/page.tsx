@@ -318,15 +318,17 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import MYLayout from "@/components/PropertyPage/MYLayout";
 import PropertyListing from "@/components/PropertyPage/PropertyListing";
 import AdDetailPage from "@/components/AdDetailPage/AdDetailPage";
-import { fetchAllCities, fetchPropertiesById, fetchSubscriptionPlanByUserId, getAdsByCompany, getCompanydetailsByName } from "@/services/api";
+import { fetchAllCities, fetchPropertiesById, fetchPropertiesDetailsByIdandUpdateView, fetchSubscriptionPlanByUserId, getAdsByCompany, getCompanydetailsByName } from "@/services/api";
 import Loader from "@/components/Loader";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import axios from "axios";
 // import AdDetailWithEdit from "@/components/AdDetailPage/MyDetailpage";
 
 
 export default function Home() {
+  const params = useParams();
+  const adId = useMemo(() => params.id, [params.id]); 
   const [filters, setFilters] = useState({
     property_type: "",
     city: "",
@@ -334,9 +336,11 @@ export default function Home() {
     price_min: "",
     price_max: "",
   });
-
+ 
   const [properties, setProperties] = useState([]);
-  const [trendingProperties1, setTrendingProperties] = useState([]);
+  const [trendingProperties, setTrendingProperties] = useState([]);
+  const [adDetails, setAdDetails] = useState<any>(null);
+
   const [cities, setCities] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -353,6 +357,8 @@ export default function Home() {
   });
   const searchParams = useSearchParams();
   // Get the "company" query parameter, if available
+ // Memoize adId to prevent unnecessary re-renders
+
   const companyQuery = searchParams.get("company");
   const handleCardClick = () => {
     
@@ -364,6 +370,26 @@ export default function Home() {
 
 
     // Navigate to dynamic route
+  };
+  const fetchAdDetails = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("aiduser") || "{}");
+     
+        fetchPropertiesDetailsByIdandUpdateView(adId, userData)
+          .then(({ details, visits }) => {
+            const detailsData = details.result?.result;
+         
+            setAdDetails(detailsData?.data || null);
+            const myf = {
+              property_type: detailsData?.property_type,
+              reason: detailsData?.reason,
+              city: detailsData?.city,
+            };
+          })
+    } catch (error) {
+      setError("Error fetching cities.");
+      console.error("API Error (Cities):", error);
+    }
   };
   /** Fetch Properties */
   const fetchProperties = useCallback(async () => {
@@ -415,7 +441,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      await Promise.all([fetchProperties(), fetchcompanydetails()]);
+      await Promise.all([fetchProperties(), fetchcompanydetails(),fetchAdDetails()]);
     } catch (error) {
       setError("Error fetching data.");
     } finally {
@@ -457,7 +483,8 @@ export default function Home() {
         >
          <ArrowLeft />
         </button>
-        <AdDetailPage /> 
+        <AdDetailPage cities={cities} adDetails={adDetails} mysubscriptionPlan={mysubscriptionPlan} handleAdChange={()=>{}}/> 
+        
         
          {/* <AdDetailWithEdit cities={cities} setFilters={setFilters}/>  */}
          </MYLayout>

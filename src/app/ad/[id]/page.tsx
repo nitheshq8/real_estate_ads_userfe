@@ -3,9 +3,9 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import MYLayout from "@/components/PropertyPage/MYLayout";
 import PropertyListing from "@/components/PropertyPage/PropertyListing";
 import AdDetailPage from "@/components/AdDetailPage/AdDetailPage";
-import { fetchAllCities, fetchAllProperties, fetchPropertiesById, fetchSubscriptionPlanByUserId, getCompanydetailsByName } from "@/services/api";
+import { fetchAllCities, fetchAllProperties, fetchPropertiesById, fetchPropertiesDetailsByIdandUpdateView, fetchSubscriptionPlanByUserId, getCompanydetailsByName } from "@/services/api";
 import Loader from "@/components/Loader";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 // import AdDetailWithEdit from "@/components/AdDetailPage/MyDetailpage";
 
@@ -33,7 +33,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selectedAds, setSelectedAds] = useState([]);
   const [mysubscriptionPlan, setMySubscriptionPlan] = useState(null);
-  
+  const params = useParams();
+  const adId = useMemo(() => params.id, [params.id]); // Memoize adId to prevent unnecessary re-renders
+  const [adDetails, setAdDetails] = useState<any>(null);
   /** Fetch Properties */
   const fetchProperties = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -56,7 +58,26 @@ export default function Home() {
   };
 
 
-
+  const fetchAdDetails = async () => {
+    try {
+      const userData = JSON.parse(localStorage.getItem("aiduser") || "{}");
+     
+        fetchPropertiesDetailsByIdandUpdateView(adId, userData)
+          .then(({ details, visits }) => {
+            const detailsData = details.result?.result;
+         
+            setAdDetails(detailsData?.data || null);
+            const myf = {
+              property_type: detailsData?.property_type,
+              reason: detailsData?.reason,
+              city: detailsData?.city,
+            };
+          })
+    } catch (error) {
+      setError("Error fetching cities.");
+      console.error("API Error (Cities):", error);
+    }
+  };
   const fetchcompanydetails = useCallback(async () => {
     try {
       const response = await getCompanydetailsByName({
@@ -79,7 +100,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      await Promise.all([fetchProperties(), fetchcompanydetails()]);
+      await Promise.all([fetchProperties(), fetchcompanydetails(),fetchAdDetails()]);
     } catch (error) {
       setError("Error fetching data.");
     } finally {
@@ -121,7 +142,8 @@ export default function Home() {
         >
          <ArrowLeft />
         </button>
-        <AdDetailPage /> 
+        <AdDetailPage cities={cities} adDetails={adDetails} mysubscriptionPlan={mysubscriptionPlan} handleAdChange={()=>{}}/> 
+        
         
          {/* <AdDetailWithEdit cities={cities} setFilters={setFilters}/>  */}
          </MYLayout>
