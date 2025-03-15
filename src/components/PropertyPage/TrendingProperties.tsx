@@ -1,7 +1,13 @@
 import { Key } from "react";
 import TrendingPropertyCard from "./TrendingPropertyCard";
+import { useRouter } from "next/navigation";
 
 const TrendingProperties = ({ properties }: any) => {
+  const router = useRouter();
+  const handleCardClick = ({ property }: any) => {
+
+    router.push(`/ad/${property.id}`); // Navigate to dynamic route
+  };
   return (
     <>
       {/* Desktop View */}
@@ -25,14 +31,24 @@ const TrendingProperties = ({ properties }: any) => {
           <div className="flex space-x-4">
             {properties?.length > 0 ? (
               properties?.map((property: any, index: Key | null | undefined) => (
+                <div key={index}>
                 <div
                   key={index}
+                  className="inline-block min-w-[200px] p-3 bg-white shadow rounded-lg"
                 >
-                  <div key={index} className="inline-block min-w-[200px] p-3 bg-white shadow rounded-lg">
-                <p className="font-semibold">{property?.name}</p>
-                <p className="text-sm text-gray-500">$2,500,000</p>
-              </div>
+                  <p className="font-semibold">{property?.name}</p>
+                  <p className="text-sm text-gray-500">$2,500,000</p>
+                  <p className="text-gray-500 flex justify-end">
+                    View's 👀 :{property?.total_visits}
+                  </p>
+                  <button
+                    className="bg-blue-700 hover:bg-blue-950 text-white px-4 py-2 rounded-lg w-full md:w-auto"
+                    onClick={() => handleCardClick(property)}
+                  >
+                    View more
+                  </button>
                 </div>
+              </div>
               ))
             ) : (
               <p className="text-gray-500">No trending properties available.</p>
