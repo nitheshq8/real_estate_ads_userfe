@@ -67,7 +67,7 @@ export default function Layout({
 
         {/* Desktop View (Hidden on Mobile) */}
         <div className="hidden md:flex items-center min-w-fit justify-between">
-          <UserMenu userData={userData} companydata={companydata} />
+          {/* <UserMenu userData={userData} companydata={companydata} /> */}
         </div>
 
         {/* Mobile Menu Button */}

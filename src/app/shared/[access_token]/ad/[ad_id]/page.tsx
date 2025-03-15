@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FiArrowLeft } from "react-icons/fi";
 import { fetchPropertiesDetailsById } from "@/services/api";
@@ -12,6 +12,24 @@ const PropertyDetailPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const images = useMemo(() => {
+    if (!property) return [];
+    return [
+      property.image,
+      ...(property?.additional_images?.map((img: any) => img.image_url) || []),
+    ];
+  }, [property]);
+
+  // Image navigation handlers (memoized)
+  const nextImage = useCallback(() => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
+
+  const prevImage = useCallback(() => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
 
   useEffect(() => {
     if (access_token && ad_id) {
@@ -45,39 +63,95 @@ const PropertyDetailPage = () => {
       {loading && <p className="text-blue-500">Loading details...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      {property && (
-        <div className="bg-white shadow-md rounded-lg p-6 w-full md:w-2/3 lg:w-1/2 mx-auto">
-          {/* Main Image */}
-          <img
-            src={property.image ? `data:image/jpeg;base64,${property.image}` : "https://via.placeholder.com/600"}
-            
-            // src={selectedImage || property.image}
-            alt={property.name}
-            className="w-full h-96 object-cover rounded-lg"
-          />
+      <div className="max-w-4xl mx-auto p-2 mt-3 bg-white shadow-2xl rounded-lg">
+      {/* Image Slider */}
+      <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-gray-200">
+        {images.length > 0 && images[0] ? (
+          <>
+            <img
+              src={`data:image/jpeg;base64,${images[currentImageIndex]}`}
+              alt={property?.name}
+              className="w-full h-full object-cover"
+            />
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute top-1/2 left-2 bg-gray-700 hover:bg-slate-400 text-white p-2 rounded-full transform -translate-y-1/2"
+                >
+                  ◀
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute top-1/2 right-2 bg-gray-700 hover:bg-slate-400 text-white p-2 rounded-full transform -translate-y-1/2"
+                >
+                  ▶
+                </button>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-500 text-lg">
+            📸 No Image Available
+          </div>
+        )}
+      </div>
 
-          {/* Thumbnail Images */}
-          <div className="flex space-x-2 mt-4">
-            {[property.image, ...(property.additional_images || [])].map((img, index) => (
-              <img
-                key={index}
-                src={`data:image/jpeg;base64,${img}`}
-                // src={img}
-                alt={`Thumbnail ${index}`}
-                className={`w-24 h-24 object-cover rounded-lg cursor-pointer ${
-                  selectedImage === img ? "border-2 border-blue-500" : ""
-                }`}
-                onClick={() => setSelectedImage(img)}
-              />
+      {/* Additional Images */}
+      {property?.additional_images?.length > 0 && (
+        <div className="mt-4">
+          <label className="block text-gray-700 font-semibold">
+            Additional Images
+          </label>
+          <div className="flex overflow-x-auto mt-2 space-x-4 p-2 border border-gray-300 rounded-lg">
+            {property.additional_images.map((img: any, index: number) => (
+              <div key={index} className="relative">
+                <img
+                  src={`data:image/jpeg;base64,${img.image_url}`}
+                  alt="Additional Image"
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+                {/* <p className="text-gray-500">
+                  📧 <span className="font-semibold">{img.name}</span>
+                </p> */}
+              </div>
             ))}
           </div>
-
-          {/* Property Details */}
-          <h2 className="text-xl font-semibold mt-4">{property.name}</h2>
-          <p className="text-gray-700 mt-2">{property.description}</p>
-          <p className="text-gray-900 font-bold mt-4">${property.price}</p>
         </div>
       )}
+
+      {/* Ad Information */}
+      <div className="mt-6">
+        <h1 className="text-3xl font-bold text-gray-900">{property?.name}</h1>
+        <p className="text-gray-600 text-lg mt-2">
+          {/* {property?.description.length>1 &&stripHtmlTags(property?.description)} */}
+          {property?.description}
+        </p>
+
+        {/* Pricing & Location */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-4">
+          <p className="text-lg font-semibold text-gray-800">
+            💰 Price:{" "}
+            <span className="text-green-600">
+              {property?.price} {property?.currency}
+            </span>
+          </p>
+          <p className="text-gray-500">
+            📍 Location:{" "}
+            <span className="font-semibold">{property?.city}</span>
+          </p>
+          <p className="text-gray-500">
+            👀 Views:{" "}
+            <span className="font-semibold">{property?.total_visits}</span>
+          </p>
+        </div>
+
+       
+
+     
+         
+      </div>
+    </div>
     </div>
   );
 };
