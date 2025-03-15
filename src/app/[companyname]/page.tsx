@@ -205,7 +205,7 @@ export default function Home() {
   const fetchcompanydetails = useCallback(async () => {
     try {
       const response = await getCompanydetailsByName({
-        company_name: "my company",
+        company_name: companyName,
       });
       console.log("getCompanydetailsByName", response?.data?.result?.company);
       if (response?.data.result.success) {
