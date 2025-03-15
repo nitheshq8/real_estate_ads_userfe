@@ -9,7 +9,7 @@ import Loader from "@/components/Loader";
 const SharedView = () => {
   const { access_token } = useParams();
   const router = useRouter();
-
+const [showkuwaitfinder,setShowkuwaitfinder]= useState('')
   // Main states
   const [adDetails, setAdDetails] = useState<{ ad_details: any[]; total: number }>({
     ad_details: [],
@@ -81,7 +81,11 @@ const SharedView = () => {
 
       // Suppose server returns: { result: { data: { ad_details, total } } }
       const result = response.data.result;
+
+    
+        // result.data?.show_kuwait_finder)
       if (result && result.data) {
+       setShowkuwaitfinder(result?.data.show_kuwait_finder)
         setAdDetails({
           ad_details: result.data.ad_details || [],
           total: result.data.total || 0,
@@ -164,20 +168,29 @@ const SharedView = () => {
               className="w-full h-64 object-cover rounded-lg"
             />
             <div className="p-4">
-              <p className="text-sm text-gray-500 mb-1">For Sale</p>
+              <p className="text-sm text-gray-500 mb-1"></p>
               <h2 className="text-lg font-semibold mb-2">
-                Apartment For Sale in {ad.name} for ₹{ad.price?.toFixed(2)}
+              {ad.name}
               </h2>
 
               <p className="text-gray-700 mb-1">
-                <span className="font-bold">Type:</span> Apartment
+                <span className="font-bold">show_kuwait_finder:</span> 
               </p>
+              {showkuwaitfinder?
+              
               <p className="text-gray-700 mb-1">
-                <span className="font-bold">Location:</span> {ad.location || "Not Available"}
-              </p>
-              <p className="text-gray-900 font-bold">
+              <span className="font-bold">Location:</span> {
+              
+              ad.kuwait_finder_link || "Not Available"}
+            </p>
+              
+              
+              
+              :''}
+             
+              {/* <p className="text-gray-900 font-bold">
                 Price: ₹ {ad.price?.toFixed(2)}
-              </p>
+              </p> */}
 
               <div className="mt-4 flex space-x-3">
                 <button
