@@ -25,6 +25,7 @@ const SharedView = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sharLinkData, setShareLinkData] = useState("");
 
   // Company data
   const [companydata, setCompanyData] = useState({
@@ -89,6 +90,8 @@ const SharedView = () => {
       const result = response.data.result;
 
       // result.data?.show_kuwait_finder)
+      console.log("setShareLinkData", result);
+
       if (result && result.data) {
         setShowkuwaitfinder(result?.data.show_kuwait_finder);
         setAdDetails({
@@ -167,6 +170,13 @@ const SharedView = () => {
 
       {/* Ads Display */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-4">
+        <div className="">
+          {adDetails?.total === 0 && (
+            <div className="text-center text-gray-500">
+              <p>No ads available. They might have been deleted or expired.</p>
+            </div>
+          ) }
+        </div>
         {adDetails.ad_details.map((ad: any) => (
           <div
             key={ad.ad_id || ad.id}
@@ -188,7 +198,7 @@ const SharedView = () => {
               {showkuwaitfinder ? (
                 <p className="text-gray-700 mb-1">
                   <span className="font-bold">Location:</span>
-                  {ad.kuwait_finder_link?(
+                  {ad.kuwait_finder_link ? (
                     <div className="p-4">
                       {/* {ad.kuwait_finder_link} */}
                       {/* {ad.kuwait_finder_link} */}
@@ -197,7 +207,9 @@ const SharedView = () => {
                         title={"copy location"}
                       />
                     </div>
-                  ) : "Not Available"}
+                  ) : (
+                    "Not Available"
+                  )}
                 </p>
               ) : (
                 ""
