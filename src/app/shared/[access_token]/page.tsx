@@ -188,7 +188,7 @@ const SharedView = () => {
               {showkuwaitfinder ? (
                 <p className="text-gray-700 mb-1">
                   <span className="font-bold">Location:</span>
-                  {(
+                  {ad.kuwait_finder_link?(
                     <div className="p-4">
                       {/* {ad.kuwait_finder_link} */}
                       {/* {ad.kuwait_finder_link} */}
@@ -197,7 +197,7 @@ const SharedView = () => {
                         title={"copy location"}
                       />
                     </div>
-                  ) || "Not Available"}
+                  ) : "Not Available"}
                 </p>
               ) : (
                 ""
