@@ -6,7 +6,7 @@ const API_BASE_URL = isProduction?"https://16.24.17.78/api/user":"http://localho
 // const API_BASE_URL = "http://localhost:8069/api/user";
 
 export const apiBaseURL = isProduction
-  ? "https://16.24.17.78/api"
+  ? "https://test.bu9la.com/api"
   : "http://localhost:8080/api";
 const apiInstance = axios.create({
   baseURL: apiBaseURL,

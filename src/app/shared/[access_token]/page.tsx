@@ -5,6 +5,7 @@ import { FiMapPin, FiArrowRight } from "react-icons/fi";
 import { fetchAllCities, fetchSharedAdsByToken, getCompanydetailsBytoken } from "@/services/api";
 import PropertyFilters from "@/components/PropertyPage/PropertyFilters";
 import Loader from "@/components/Loader";
+import ClipboardButton from "@/components/ClipboardButton";
 
 const SharedView = () => {
   const { access_token } = useParams();
@@ -85,7 +86,7 @@ const [showkuwaitfinder,setShowkuwaitfinder]= useState('')
     
         // result.data?.show_kuwait_finder)
       if (result && result.data) {
-       setShowkuwaitfinder(result?.data.show_kuwait_finder)
+        setShowkuwaitfinder(result?.data.show_kuwait_finder)
         setAdDetails({
           ad_details: result.data.ad_details || [],
           total: result.data.total || 0,
@@ -173,15 +174,20 @@ const [showkuwaitfinder,setShowkuwaitfinder]= useState('')
               {ad.name}
               </h2>
 
-              <p className="text-gray-700 mb-1">
-                <span className="font-bold">show_kuwait_finder:</span> 
-              </p>
+             
               {showkuwaitfinder?
               
               <p className="text-gray-700 mb-1">
-              <span className="font-bold">Location:</span> {
-              
-              ad.kuwait_finder_link || "Not Available"}
+              <span className="font-bold">Location:</span>
+              { <div className="p-4">
+      {/* {ad.kuwait_finder_link} */}
+      {/* {ad.kuwait_finder_link} */}
+     <ClipboardButton
+        textToCopy={ad.kuwait_finder_link}
+        title ={"copy location"}
+      />
+    </div>
+                || "Not Available"}
             </p>
               
               
