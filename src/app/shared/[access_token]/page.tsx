@@ -90,8 +90,7 @@ const SharedView = () => {
       const result = response.data.result;
 
       // result.data?.show_kuwait_finder)
-      console.log("setShareLinkData", result);
-
+     
       if (result && result.data) {
         setShowkuwaitfinder(result?.data.show_kuwait_finder);
         setAdDetails({
@@ -100,7 +99,7 @@ const SharedView = () => {
         });
       } else {
         setAdDetails({ ad_details: [], total: 0 });
-        setError("Unexpected response format.");
+        setError("This share link has expired.")
       }
     } catch (err: any) {
       setError(err.message || "Error fetching shared link details.");
