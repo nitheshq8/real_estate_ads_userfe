@@ -50,24 +50,28 @@ const MYLayout = ({
       setUserData(userData1);
     }
   }, []);
+  console.log("companydata",companydata);
+  
  return (
     <div className="relative flex flex-col h-screen ">
       {/* Header */}
       <header className="bg-white shadow-md p-4 flex justify-around items-center fixed top-0 w-full z-50">
         <div className="flex items-center">
+        {companydata.logo?
         <div
       className="flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 overflow-hidden"
       style={{ width: 50, height: 50 }}
     >
-      
+    
         <img
-          src={companydata?.logo}
-          alt={''}
+           src={companydata?.logo ? `data:image/jpeg;base64,${companydata?.logo}` : "https://via.placeholder.com/600"}
+           alt={''}
           className="object-cover w-full h-full"
           
         />
-   
     </div>
+    :''
+  } 
         <h1 className="text-xl font-bold ml-2">{companydata?.name}</h1>
         </div>
        
