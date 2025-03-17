@@ -195,12 +195,12 @@ export default function Home() {
   const [mysubscriptionPlan, setMySubscriptionPlan] = useState<any>(null);
   const [tredningProperties, setTredningProperties] = useState([]);
   const[companydata,setCompanyData]=useState({
-    "name": "-",
-    "email": "-",
-    "phone": "-",
+    "name": "q8coders",
+    "email": "",
+    "phone": "",
     "website": "N/A",
-    "address": "-",
-    "logo": "-"
+    "address": "",
+    "logo": ""
 })
   const router = useRouter();
   const isFetched = useRef(false);
@@ -214,6 +214,7 @@ export default function Home() {
       const response = await fetchAllProperties(page, pageSize, filters);
       if (response) {
         setProperties(response.ads);
+        setTredningProperties(response.ads);
         setTotalItems(response.total || 0);
       } else {
         throw new Error(response.data?.error?.message || "Failed to fetch properties");

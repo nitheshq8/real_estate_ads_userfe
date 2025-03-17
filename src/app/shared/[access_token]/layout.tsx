@@ -24,7 +24,7 @@ export default function Layout({
   children: ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [companydata, setCompanyData] = useState<any>({ name: "A" });
+  const [companydata, setCompanyData] = useState<any>({ name: "" });
   const userData = JSON.parse(localStorage.getItem("aiduser") || "{}");
   const { access_token } = useParams();
 

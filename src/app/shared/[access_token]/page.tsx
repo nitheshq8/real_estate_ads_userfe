@@ -182,11 +182,16 @@ const SharedView = () => {
             className="bg-white shadow-md rounded-lg p-1 w-full mx-auto"
           >
             <img
-              src={
-                ad.main_image
-                  ? `data:image/jpeg;base64,${ad.main_image}`
-                  : "https://via.placeholder.com/600"
-              }
+             src={
+              ad?.main_image
+                ? `data:image/png;base64,${ad.main_image}`
+                : `https://placehold.co/600x400.png?text=${ad.name}`
+            }
+              // src={
+              //   ad.main_image
+              //     ? `data:image/jpeg;base64,${ad.main_image}`
+              //     : "https://via.placeholder.com/600"
+              // }
               alt={ad.name}
               className="w-full h-64 object-cover rounded-lg"
             />
@@ -202,7 +207,7 @@ const SharedView = () => {
                       {/* {ad.kuwait_finder_link} */}
                       {/* {ad.kuwait_finder_link} */}
                       <ClipboardButton
-                        textToCopy={ad.kuwait_finder_link}
+                        textToCopy={ad?.kuwait_finder_link}
                         title={"copy location"}
                       />
                     </div>
