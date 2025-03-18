@@ -1,8 +1,120 @@
+// "use client";
+// import { useCallback, useEffect, useMemo, useState } from "react";
+// import { useParams, useRouter } from "next/navigation";
+// import { FiArrowLeft } from "react-icons/fi";
+// import { fetchPropertiesDetailsById } from "@/services/api";
+// import Image from "next/image";
+
+// const PropertyDetailPage = () => {
+//   const { access_token, ad_id } = useParams();
+//   const router = useRouter();
+
+//   const [property, setProperty] = useState<any>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [selectedImage, setSelectedImage] = useState<string | null>('');
+//   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+//   const images = useMemo(() => {
+//     if (!property) return [];
+//     return [
+//       property.image,
+//       ...(property?.additional_images?.map((img: any) => img.image_url) || []),
+//     ];
+//   }, [property]);
+
+//   // Image navigation handlers (memoized)
+//   const nextImage = useCallback(() => {
+//     setCurrentImageIndex((prev) => (prev + 1) % images.length);
+//   }, [images.length]);
+
+//   const prevImage = useCallback(() => {
+//     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+//   }, [images.length]);
+
+//   useEffect(() => {
+//     if (access_token && ad_id) {
+//         fetchPropertiesDetailsById(ad_id)
+//         .then(({ details }) => {
+//           const detailsData = details.result?.result;
+//           setProperty(detailsData?.data || null);
+//           const myf = {
+//             property_type: detailsData?.property_type,
+//             reason: detailsData?.reason,
+//             city: detailsData?.city,
+//           };
+//         })
+
+//         // fetchPropertiesDetailsById();
+//     }
+//   }, [access_token, ad_id]);
+
+//   return (
+//     <div className="max-w-5xl mx-auto p-6">
+//         {/* Back Button */}
+//         <button 
+//              onClick={() => router.push(`/shared/${access_token}`)}
+//         className="bg-gray-500 text-white px-4 py-2 rounded mb-4">
+//             ← Back to List
+//         </button>
+
+//         <div className="bg-white shadow-lg p-6 rounded-lg">
+//             {/* Property Title */}
+//             <h2 className="text-2xl font-bold mb-4">{property?.name}</h2>
+
+//             {/* Image Gallery & Carousel */}
+//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//                 {/* Main Image Section */}
+//                 <div className="relative">
+//                     <Image 
+//                     // src={selectedImage} 
+//                     src={`data:image/jpeg;base64,${selectedImage}`}
+//                     // src={`data:image/jpeg;base64,${images[currentImageIndex]}`}
+//                     //            
+//                       //  src={`data:image/jpeg;base64,${selectedImage}`}
+                           
+//                     alt={property?.name}width={600} height={400} className="w-full h-96 object-cover rounded" />
+//                 </div>
+
+//                 {/* Thumbnail Gallery */}
+//                 <div className="grid grid-cols-4 gap-2">
+//                     {images.map((img, index) => (
+//                         <Image
+//                             key={index}
+//                             src={`data:image/jpeg;base64,${img}`}
+//                             //                 
+//                             alt="Thumbnail"
+//                             width={100}
+//                             height={80}
+//                             className={`cursor-pointer rounded ${selectedImage === img ? "border-4 border-blue-500" : "border"}`}
+//                             onClick={() => setSelectedImage(img)}
+//                         />
+//                     ))}
+//                 </div>
+//             </div>
+
+//             {/* Property Details */}
+//             <div className="mt-6">
+//                 <p><strong>Type:</strong> {property?.propertyType}</p>
+//                 <p><strong>Location:</strong> {property?.city}</p>
+//                 <p><strong>Price:</strong> {property?.price}</p>
+//                 <p className="mt-4"><strong>Description:</strong> {property?.description}</p>
+//             </div>
+//         </div>
+//     </div>
+// );
+
+
+// };
+
+// export default PropertyDetailPage;
+
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FiArrowLeft } from "react-icons/fi";
 import { fetchPropertiesDetailsById } from "@/services/api";
+import Image from "next/image";
 
 const PropertyDetailPage = () => {
   const { access_token, ad_id } = useParams();
@@ -11,15 +123,23 @@ const PropertyDetailPage = () => {
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
+  const [isFullScreen, setIsFullScreen] = useState(false); // State to manage full-screen view
+  const stripHtmlTags = useCallback((html: any): string => {
+    if (typeof html !== "string") {
+      console.warn("Expected a string, got:", html);
+      return "";
+    }
+    return html.replace(/<[^>]*>/g, "");
+  }, []);
   const images = useMemo(() => {
     if (!property) return [];
     return [
       property.image,
       ...(property?.additional_images?.map((img: any) => img.image_url) || []),
     ];
+   
   }, [property]);
 
   // Image navigation handlers (memoized)
@@ -33,127 +153,252 @@ const PropertyDetailPage = () => {
 
   useEffect(() => {
     if (access_token && ad_id) {
-        fetchPropertiesDetailsById(ad_id)
+      fetchPropertiesDetailsById(ad_id)
         .then(({ details }) => {
           const detailsData = details.result?.result;
           setProperty(detailsData?.data || null);
+          setSelectedImage(detailsData?.data?.image)
           const myf = {
             property_type: detailsData?.property_type,
             reason: detailsData?.reason,
             city: detailsData?.city,
           };
-        })
-
-        // fetchPropertiesDetailsById();
+        });
     }
   }, [access_token, ad_id]);
 
+  const handleImageClick = (img: any) => {
+    setSelectedImage(img);
+    setIsFullScreen(true); // Open full-screen view when image is clicked
+  };
+
+  const closeFullScreen = () => {
+    setIsFullScreen(false);
+  };
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 p-6">
+    <div className=" mx-auto p-6 mt-20">
       {/* Back Button */}
-      <button
-        onClick={() => router.push(`/shared/${access_token}`)}
-        className="flex items-center bg-gray-700 text-white px-4 py-2 rounded-md w-fit mb-4 hover:bg-gray-900"
-      >
-        <FiArrowLeft className="mr-2" /> Back to List
+      <button onClick={() => router.push(`/shared/${access_token}`)} className="bg-gray-500 text-white px-4 py-2 rounded mb-4">
+        ← Back to List
       </button>
 
-      <h1 className="text-3xl font-bold mb-6 text-gray-900">Property Details</h1>
+      <div className="bg-white shadow-lg p-6 rounded-lg">
+        {/* Property Title */}
+        <h2 className="text-2xl font-bold mb-4">{property?.name}</h2>
 
-      {loading && <p className="text-blue-500">Loading details...</p>}
-      {error && <p className="text-red-500">{error}</p>}
-
-      <div className="max-w-4xl mx-auto p-2 mt-3 bg-white shadow-2xl rounded-lg">
-      {/* Image Slider */}
-      <div className="relative w-full h-[300px] rounded-lg overflow-hidden bg-gray-200">
-        {images.length > 0 && images[0] ? (
-          <>
-            <img
-              src={`data:image/jpeg;base64,${images[currentImageIndex]}`}
+        {/* Image Gallery & Carousel */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Main Image Section */}
+          <div className="relative">
+            <Image
+              src={`data:image/jpeg;base64,${selectedImage || images[currentImageIndex]}`}
               alt={property?.name}
-              className="w-full h-full object-cover"
+              width={600}
+              height={400}
+              className="w-full h-96 object-cover rounded cursor-pointer"
+              onClick={() => handleImageClick(selectedImage)} // Handle click to show image in full screen
             />
-            {images.length > 1 && (
-              <>
-                <button
-                  onClick={prevImage}
-                  className="absolute top-1/2 left-2 bg-gray-700 hover:bg-slate-400 text-white p-2 rounded-full transform -translate-y-1/2"
-                >
-                  ◀
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="absolute top-1/2 right-2 bg-gray-700 hover:bg-slate-400 text-white p-2 rounded-full transform -translate-y-1/2"
-                >
-                  ▶
-                </button>
-              </>
-            )}
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-500 text-lg">
-            📸 No Image Available
           </div>
-        )}
-      </div>
 
-      {/* Additional Images */}
-      {property?.additional_images?.length > 0 && (
-        <div className="mt-4">
-          <label className="block text-gray-700 font-semibold">
-            Additional Images
-          </label>
-          <div className="flex overflow-x-auto mt-2 space-x-4 p-2 border border-gray-300 rounded-lg">
-            {property.additional_images.map((img: any, index: number) => (
-              <div key={index} className="relative">
-                <img
-                  src={`data:image/jpeg;base64,${img.image_url}`}
-                  alt="Additional Image"
-                  className="w-24 h-24 object-cover rounded-md"
-                />
-                {/* <p className="text-gray-500">
-                  📧 <span className="font-semibold">{img.name}</span>
-                </p> */}
-              </div>
+          {/* Thumbnail Gallery */}
+          <div className="grid grid-cols-4 gap-2">
+            {images.map((img, index) => (
+              <Image
+                key={index}
+                src={`data:image/jpeg;base64,${img}`}
+                alt="Thumbnail"
+                width={100}
+                height={80}
+                className={`cursor-pointer rounded ${selectedImage === img ? "border-4 border-blue-500" : "border"}`}
+                onClick={() => setSelectedImage(img)}
+              />
             ))}
           </div>
         </div>
-      )}
 
-      {/* Ad Information */}
-      <div className="mt-6">
-        <h1 className="text-3xl font-bold text-gray-900">{property?.name}</h1>
-        <p className="text-gray-600 text-lg mt-2">
-          {/* {property?.description.length>1 &&stripHtmlTags(property?.description)} */}
-          {property?.description}
-        </p>
-
-        {/* Pricing & Location */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-4">
-          <p className="text-lg font-semibold text-gray-800">
-            💰 Price:{" "}
-            <span className="text-green-600">
-              {property?.price} {property?.currency}
-            </span>
-          </p>
-          <p className="text-gray-500">
-            📍 Location:{" "}
-            <span className="font-semibold">{property?.city}</span>
-          </p>
-          <p className="text-gray-500">
-            👀 Views:{" "}
-            <span className="font-semibold">{property?.total_visits}</span>
-          </p>
+        {/* Property Details */}
+        <div className="mt-6">
+          <p><strong>Location:</strong> {property?.city}</p>
+          <p className=""><strong>Description:</strong> {stripHtmlTags(property?.description)}</p>
+          {property?.kuwait_finder_link && (
+                  <a href={property?.kuwait_finder_link} target="_blank" className="bg-gray-200 px-3 py-1 rounded text-sm">
+                      📍 Location
+                  </a>
+              )}
         </div>
-
-       
-
-     
-         
       </div>
-    </div>
+
+      {/* Full-Screen Image Modal */}
+      {isFullScreen && (
+       <div className="fixed inset-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="relative w-96 h-auto">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-white text-3xl"
+              onClick={closeFullScreen}
+            >
+              &times;
+            </button>
+            <Image
+              src={`data:image/jpeg;base64,${selectedImage}`}
+              alt="Full Screen"
+              width={1200} // Adjust width as needed
+              height={800} // Adjust height as needed
+              className="w-full h-auto object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default PropertyDetailPage;
+
+
+
+// "use client";
+// import { useCallback, useEffect, useState, useMemo } from "react";
+// import { useParams, useRouter } from "next/navigation";
+// import { FiArrowLeft } from "react-icons/fi";
+// import { fetchPropertiesDetailsById } from "@/services/api";
+// import Image from "next/image";
+
+// const PropertyDetailPage = () => {
+//   const { access_token, ad_id } = useParams();
+//   const router = useRouter();
+
+//   const [property, setProperty] = useState<any>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [selectedImage, setSelectedImage] = useState<string | null>('');
+//   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+//   const [isFullScreen, setIsFullScreen] = useState(false); // State to manage full-screen view
+
+//   const images = useMemo(() => {
+//     if (!property) return [];
+//     return [
+//       property.image,
+//       ...(property?.additional_images?.map((img: any) => img.image_url) || []),
+//     ];
+//   }, [property]);
+
+//   // Image navigation handlers (memoized)
+//   const nextImage = useCallback(() => {
+//     setCurrentImageIndex((prev) => (prev + 1) % images.length);
+//   }, [images.length]);
+
+//   const prevImage = useCallback(() => {
+//     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+//   }, [images.length]);
+
+//   useEffect(() => {
+//     if (access_token && ad_id) {
+//       fetchPropertiesDetailsById(ad_id)
+//         .then(({ details }) => {
+//           const detailsData = details.result?.result;
+//           setProperty(detailsData?.data || null);
+//           setSelectedImage(detailsData?.data?.image)
+//         });
+//     }
+//   }, [access_token, ad_id]);
+
+//   const handleImageClick = (img: any) => {
+//     setSelectedImage(img);
+//     setIsFullScreen(true); // Open full-screen view when image is clicked
+//   };
+
+//   const closeFullScreen = () => {
+//     setIsFullScreen(false);
+//   };
+
+//   return (
+//     <div className=" mx-auto p-6">
+//       {/* Back Button */}
+//       <button onClick={() => router.push(`/shared/${access_token}`)} className="bg-gray-500 text-white px-4 py-2 rounded mb-4">
+//         ← Back to List
+//       </button>
+
+//       <div className="bg-white shadow-lg p-6 rounded-lg">
+//         {/* Property Title */}
+//         <h2 className="text-2xl font-bold mb-4">{property?.name}</h2>
+
+//         {/* Image Gallery & Carousel */}
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+//           {/* Main Image Section */}
+//           <div className="relative">
+//             <Image
+//               src={`data:image/jpeg;base64,${selectedImage || images[currentImageIndex]}`}
+//               alt={property?.name}
+//               width={600}
+//               height={400}
+//               className="w-full h-96 object-cover rounded cursor-pointer"
+//               onClick={() =>handleImageClick(selectedImage)} // Handle click to show image in full screen
+//             />
+//           </div>
+
+//           {/* Thumbnail Gallery */}
+//           <div className="grid grid-cols-4 gap-2">
+//             {images.map((img, index) => (
+//               <Image
+//                 key={index}
+//                 src={`data:image/jpeg;base64,${img}`}
+//                 alt="Thumbnail"
+//                 width={100}
+//                 height={80}
+//                 className={`cursor-pointer rounded ${selectedImage === img ? "border-4 border-blue-500" : "border"}`}
+//                 onClick={() => setSelectedImage(img)}
+//               />
+//             ))}
+//           </div>
+//         </div>
+
+//         {/* Property Details */}
+//         <div className="mt-6">
+//           <p><strong>Type:</strong> {property?.propertyType}</p>
+//           <p><strong>Location:</strong> {property?.city}</p>
+//           <p><strong>Price:</strong> {property?.price}</p>
+//           <p className="mt-4"><strong>Description:</strong> {property?.description}</p>
+//         </div>
+//       </div>
+
+//       {/* Full-Screen Image Modal */}
+//       {isFullScreen && (
+//         <div className="fixed inset-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50">
+//           <div className="relative w-96 h-auto p-3 m-3">
+//             {/* Close Button */}
+//             <button
+//               className="absolute top-4 right-4 text-white text-3xl"
+//               onClick={closeFullScreen}
+//             >
+//               &times;
+//             </button>
+//             <Image
+//               src={`data:image/jpeg;base64,${images[currentImageIndex]}`}
+//               alt="Full Screen"
+//               width={1200} // Adjust width as needed
+//               height={800} // Adjust height as needed
+//               className="w-full h-auto object-contain"
+//             />
+//             {/* Left/Right Arrows for Image Navigation */}
+//             <button
+//               className="absolute top-1/2 left-4 p-3 text-white text-3xl transform -translate-y-1/2"
+//               onClick={prevImage}
+//             >
+//               &lt;
+//             </button>
+//             <button
+//               className="absolute top-1/2 right-4 p-3 text-white text-3xl transform -translate-y-1/2"
+//               onClick={nextImage}
+//             >
+//               &gt;
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default PropertyDetailPage;

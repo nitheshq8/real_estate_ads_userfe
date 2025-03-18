@@ -10,6 +10,7 @@ import {
 import PropertyFilters from "@/components/PropertyPage/PropertyFilters";
 import Loader from "@/components/Loader";
 import ClipboardButton from "@/components/ClipboardButton";
+import Image from "next/image";
 
 const SharedView = () => {
   const { access_token } = useParams();
@@ -132,15 +133,14 @@ const SharedView = () => {
     fetchSharedAds();
   }, [fetchSharedAds]);
 
-  // If user modifies filters => reset to page=1
   const handleAdChange = useCallback(() => {
     setPage(1);
   }, []);
 
   // Rendering
   return (
-    <div className="relative flex flex-col min-h-screen bg-gray-100 p-6">
-      {/* Loader overlay (full-page) */}
+    <div className="relative flex flex-col min-h-screen  mt-20 bg-gray-100 p-6">
+   
       {loading && (
         <p className="text-blue-500">
           <Loader />
@@ -176,67 +176,122 @@ const SharedView = () => {
             </div>
           ) }
         </div>
-        {adDetails.ad_details.map((ad: any) => (
-          <div
-            key={ad.ad_id || ad.id}
-            className="bg-white shadow-md rounded-lg p-1 w-full mx-auto"
-          >
-            <img
-             src={
-              ad?.main_image
-                ? `data:image/png;base64,${ad.main_image}`
-                : `https://placehold.co/600x400.png?text=${ad.name}`
-            }
-              // src={
-              //   ad.main_image
-              //     ? `data:image/jpeg;base64,${ad.main_image}`
-              //     : "https://via.placeholder.com/600"
-              // }
-              alt={ad.name}
-              className="w-full h-64 object-cover rounded-lg"
-            />
-            <div className="p-4">
-              <p className="text-sm text-gray-500 mb-1"></p>
-              <h2 className="text-lg font-semibold mb-2">{ad.name}</h2>
+        {adDetails?.ad_details?.map((ad: any) => (
 
-              {showkuwaitfinder ? (
-                <p className="text-gray-700 mb-1">
-                  <span className="font-bold">Location:</span>
-                  {ad.kuwait_finder_link ? (
-                    <div className="p-4">
-                      {/* {ad.kuwait_finder_link} */}
-                      {/* {ad.kuwait_finder_link} */}
-                      <ClipboardButton
-                        textToCopy={ad?.kuwait_finder_link}
-                        title={"copy location"}
-                      />
-                    </div>
-                  ) : (
-                    "Not Available"
-                  )}
-                </p>
+          <> <div className="border rounded-lg shadow-md overflow-hidden">
+          {/* Property Image */}
+          <div className="relative">
+              {ad?.main_image ? (
+                  <Image  
+                     src={
+                        ad?.main_image
+                          ? `data:image/png;base64,${ad?.main_image}`
+                          : `https://placehold.co/600x400.png?text=${ad?.name}`
+                      } alt={ad.name} width={400} height={200} className="w-full h-48 object-cover" />
               ) : (
-                ""
+                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                      <span>No Image</span>
+                  </div>
               )}
 
-              {/* <p className="text-gray-900 font-bold">
-                Price: ₹ {ad.price?.toFixed(2)}
-              </p> */}
+              {/* Property Badge */}
+              <div className={`absolute top-2 left-2 px-2 py-1 text-white rounded ${ad?.reason === "sell" ? "bg-red-500" : ad?.reason === "rent" ? "bg-blue-500" : "bg-green-500"}`}>
+                  {ad?.reason === "sell" ? "For Sale" : ad?.reason === "rent" ? "For Rent" : "For Exchange"}
+              </div>
+          </div>
 
-              <div className="mt-4 flex space-x-3">
-                <button
+          {/* Property Details */}
+          <div className="p-4">
+              <h5 className="text-lg font-semibold">{ad?.name}</h5>
+             
+                 
+
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 border-t flex justify-between items-center bg-gray-50">
+              {/* <a href={isShared ? `/shared/ads/${ad.id}` : `/shared-links/${ad.id}`} className="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                  View Details
+              </a> */}
+                  <div className=" flex space-x-3">
+                 <button
                   onClick={() =>
                     router.push(
-                      `/shared/${access_token}/ad/${ad.ad_id || ad.id}`
+                      `/shared/${access_token}/ad/${ad?.ad_id || ad?.id}`
                     )
                   }
-                  className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-900 flex items-center"
+                  className="bg-blue-600 text-white px-3 py-1  rounded-lg hover:bg-blue-900 flex items-center"
                 >
                   View Details <FiArrowRight className="ml-2" />
                 </button>
               </div>
-            </div>
+              {ad.kuwait_finder_link && (
+                  <a href={ad.kuwait_finder_link} target="_blank" className="bg-gray-200 px-3 py-1 rounded text-sm">
+                      📍 Location
+                  </a>
+              )}
           </div>
+      </div></>
+          // <div
+          //   key={ad.ad_id || ad.id}
+          //   className="bg-white shadow-md rounded-lg p-1 w-full mx-auto"
+          // >
+          //   <img
+          //    src={
+          //     ad?.main_image
+          //       ? `data:image/png;base64,${ad.main_image}`
+          //       : `https://placehold.co/600x400.png?text=${ad.name}`
+          //   }
+          //     // src={
+          //     //   ad.main_image
+          //     //     ? `data:image/jpeg;base64,${ad.main_image}`
+          //     //     : "https://via.placeholder.com/600"
+          //     // }
+          //     alt={ad.name}
+          //     className="w-full h-64 object-cover rounded-lg"
+          //   />
+          //   <div className="p-4">
+          //     <p className="text-sm text-gray-500 mb-1"></p>
+          //     <h2 className="text-lg font-semibold mb-2">{ad.name}</h2>
+
+          //     {showkuwaitfinder ? (
+          //       <p className="text-gray-700 mb-1">
+          //         <span className="font-bold">Location:</span>
+          //         {ad.kuwait_finder_link ? (
+          //           <div className="p-4">
+          //             {/* {ad.kuwait_finder_link} */}
+          //             {/* {ad.kuwait_finder_link} */}
+          //             <ClipboardButton
+          //               textToCopy={ad?.kuwait_finder_link}
+          //               title={"copy location"}
+          //             />
+          //           </div>
+          //         ) : (
+          //           "Not Available"
+          //         )}
+          //       </p>
+          //     ) : (
+          //       ""
+          //     )}
+
+          //     {/* <p className="text-gray-900 font-bold">
+          //       Price: ₹ {ad.price?.toFixed(2)}
+          //     </p> */}
+
+          //     <div className="mt-4 flex space-x-3">
+          //       <button
+          //         onClick={() =>
+          //           router.push(
+          //             `/shared/${access_token}/ad/${ad.ad_id || ad.id}`
+          //           )
+          //         }
+          //         className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-900 flex items-center"
+          //       >
+          //         View Details <FiArrowRight className="ml-2" />
+          //       </button>
+          //     </div>
+          //   </div>
+          // </div>
         ))}
       </div>
 
