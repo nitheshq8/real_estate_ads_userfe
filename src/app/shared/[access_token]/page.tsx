@@ -225,7 +225,8 @@ const SharedView = () => {
                   View Details <FiArrowRight className="ml-2" />
                 </button>
               </div>
-              {ad.kuwait_finder_link && (
+
+              {ad.kuwait_finder_link&&showkuwaitfinder && (
                   <a href={ad.kuwait_finder_link} target="_blank" className="bg-gray-200 px-3 py-1 rounded text-sm">
                       📍 Location
                   </a>
